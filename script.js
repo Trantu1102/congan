@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const startBtn = document.getElementById('startBtn');
+    const buttons = document.querySelectorAll('.main-button');
     const countdownDisplay = document.getElementById('countdownDisplay');
     const countdownNumber = document.getElementById('countdownNumber');
     const targetUrl = "https://daihoidang.cand.vn/";
@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Play first beep immediately for "5"
         playBeep();
 
-        // Hide button, show countdown
-        startBtn.classList.add('hide');
+        // Hide all buttons, show countdown
+        buttons.forEach(btn => btn.classList.add('hide'));
         countdownDisplay.classList.remove('hide');
 
         let count = 5;
@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         playExplosion();
 
-                        // Add zoom out animation
-                        countdownDisplay.style.animation = 'zoomOut 1s ease-in forwards';
+                        // Add zoom out animation to the number, not the container
+                        countdownNumber.style.animation = 'zoomOut 1s ease-in forwards';
 
                         // Delay redirect to let explosion sound play and zoom out animation complete
                         setTimeout(() => {
@@ -70,8 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     };
 
-    // Click event
-    startBtn.addEventListener('click', startCountdown);
+    // Click event for all buttons
+    buttons.forEach(button => {
+        button.addEventListener('click', startCountdown);
+    });
 
     // Keyboard event (Enter)
     document.addEventListener('keydown', (e) => {
@@ -80,6 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle initial focus
-    startBtn.focus();
+    // Handle initial focus on first button
+    if (buttons.length > 0) {
+        buttons[0].focus();
+    }
 });

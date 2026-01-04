@@ -32,13 +32,26 @@ html {
     z-index: -1;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
 }
 
 .content-wrapper {
     text-align: center;
     position: relative;
     z-index: 1;
+    width: 100%;
+    padding-bottom: 60px;
+}
+
+/* Grid container for 6 buttons */
+.buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 220px);
+    grid-template-rows: 220px;
+    gap: 40px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 60px;
 }
 
 .main-button {
@@ -273,11 +286,14 @@ html {
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     font-size: 20rem;
     font-weight: 900;
     perspective: 1000px;
+    z-index: 10;
 }
 
 #countdownNumber {
