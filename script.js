@@ -8,6 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Explosion sound for zero
     const explosionAudio = new Audio('explosion.mp3');
 
+    // Adjust volume levels
+    beepAudio.volume = 0.3; // Quieter beep
+    explosionAudio.volume = 1.0; // Max volume for explosion
+
     let isCountingDown = false;
 
     const playBeep = () => {
