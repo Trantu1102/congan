@@ -40,18 +40,63 @@ html {
     position: relative;
     z-index: 1;
     width: 100%;
-    padding-bottom: 60px;
+    padding-bottom: 90px;
 }
 
-/* Grid container for 6 buttons */
-.buttons-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 220px);
-    grid-template-rows: 220px;
+/* Particles canvas */
+#particlesCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Blur overlay for countdown */
+.blur-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    transition: backdrop-filter 0.5s ease, opacity 0.5s ease;
+}
+
+.blur-overlay.active {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Buttons container for 2 groups */
+.buttons-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 60px;
+}
+
+/* Group of 3 buttons */
+.buttons-group {
+    display: flex;
     gap: 40px;
     justify-content: center;
     align-items: center;
-    margin-bottom: 60px;
+}
+
+/* Gap divider between two groups */
+.buttons-gap {
+    width: 120px;
+    /* Larger gap between group 3 and 4 */
 }
 
 .main-button {
@@ -290,10 +335,11 @@ html {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 20rem;
+    font-size: 18rem;
     font-weight: 900;
     perspective: 1000px;
-    z-index: 10;
+    z-index: 15;
+    /* Ensure countdown is not blurred - it's above the blur overlay */
 }
 
 #countdownNumber {
