@@ -197,9 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Play first beep immediately for "5"
         playBeep();
 
-        // Hide all buttons, show countdown, and activate blur
-        buttons.forEach(btn => btn.classList.add('hide'));
-        document.querySelector('.buttons-container').classList.add('hide');
+        // Add fast radial wave effect to all buttons (don't hide them)
+        buttons.forEach(btn => {
+            const waves = btn.querySelectorAll('.radial-wave');
+            waves.forEach(wave => wave.classList.add('radial-wave-fast'));
+        });
+
+        // Show countdown and activate blur
         countdownDisplay.classList.remove('hide');
         blurOverlay.classList.add('active');
 
