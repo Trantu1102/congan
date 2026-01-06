@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('particlesCanvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
-    const particleCount = 80;
+    const particleCount = 50; // Reduced for better performance
 
     // Resize canvas to full screen
     const resizeCanvas = () => {
@@ -126,9 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
             this.x += this.speedX;
             this.y += this.speedY;
 
-            // Twinkle effect
-            this.currentOpacity = this.opacity * (0.5 + 0.5 * Math.sin(Date.now() * this.twinkleSpeed + this.twinkleOffset));
-
             // Reset particle if out of bounds
             if (this.x < -10 || this.x > canvas.width + 10 ||
                 this.y < -10 || this.y > canvas.height + 10) {
@@ -144,15 +141,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        draw() {
+        draw(timestamp) {
+            // Twinkle effect - use cached timestamp
+            this.currentOpacity = this.opacity * (0.5 + 0.5 * Math.sin(timestamp * this.twinkleSpeed + this.twinkleOffset));
+
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fillStyle = this.color + this.currentOpacity + ')';
             ctx.fill();
-
-            // Glow effect
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = this.color + '0.5)';
+            // Removed expensive shadowBlur for performance
         }
     }
 
@@ -164,13 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Animate particles
-    const animateParticles = () => {
+    // Animate particles with timestamp caching
+    const animateParticles = (timestamp) => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         particles.forEach(particle => {
             particle.update();
-            particle.draw();
+            particle.draw(timestamp);
         });
 
         requestAnimationFrame(animateParticles);
