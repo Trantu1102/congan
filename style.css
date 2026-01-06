@@ -40,7 +40,7 @@ html {
     position: relative;
     z-index: 1;
     width: 100%;
-    padding-bottom: 90px;
+    padding-bottom: 10vh;
 }
 
 /* Particles canvas */
@@ -82,28 +82,29 @@ html {
     justify-content: center;
     align-items: center;
     gap: 0;
-    margin-bottom: 60px;
+    margin-bottom: 3vw;
 }
 
 /* Group of 3 buttons */
 .buttons-group {
     display: flex;
-    gap: 40px;
+    gap: 2.5vw;
     justify-content: center;
     align-items: center;
 }
 
 /* Gap divider between two groups */
 .buttons-gap {
-    width: 120px;
+    width: 7vw;
     /* Larger gap between group 3 and 4 */
 }
 
 .main-button {
-    width: 220px;
-    height: 220px;
+    /* Use viewport width for responsive sizing - 11.5vw ≈ 220px at 1920px width */
+    width: 11.5vw;
+    height: 11.5vw;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 0.1vw solid rgba(255, 255, 255, 0.3);
     cursor: pointer;
     transition: all 0.15s ease;
     outline: none;
@@ -119,11 +120,11 @@ html {
     -webkit-backdrop-filter: blur(10px);
 
     box-shadow:
-        0 15px 35px rgba(0, 0, 0, 0.4),
-        0 0 30px rgba(255, 100, 50, 0.4),
-        0 0 60px rgba(255, 50, 0, 0.2),
-        inset 0 2px 15px rgba(255, 255, 255, 0.3),
-        inset 0 -2px 15px rgba(0, 0, 0, 0.2);
+        0 0.8vw 1.8vw rgba(0, 0, 0, 0.4),
+        0 0 1.5vw rgba(255, 100, 50, 0.4),
+        0 0 3vw rgba(255, 50, 0, 0.2),
+        inset 0 0.1vw 0.8vw rgba(255, 255, 255, 0.3),
+        inset 0 -0.1vw 0.8vw rgba(0, 0, 0, 0.2);
 
     display: flex;
     justify-content: center;
@@ -145,8 +146,8 @@ html {
 .main-button::before {
     content: '';
     position: absolute;
-    width: 180px;
-    height: 180px;
+    width: 82%;
+    height: 82%;
     border-radius: 50%;
     background: radial-gradient(circle at 35% 35%,
             rgba(255, 150, 120, 0.4),
@@ -157,18 +158,18 @@ html {
     -webkit-backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow:
-        inset 0 -8px 15px rgba(0, 0, 0, 0.2),
-        inset 0 8px 25px rgba(255, 255, 255, 0.4),
-        inset -5px -5px 15px rgba(0, 0, 0, 0.15),
-        0 5px 15px rgba(0, 0, 0, 0.2);
+        inset 0 -0.4vw 0.8vw rgba(0, 0, 0, 0.2),
+        inset 0 0.4vw 1.3vw rgba(255, 255, 255, 0.4),
+        inset -0.25vw -0.25vw 0.8vw rgba(0, 0, 0, 0.15),
+        0 0.25vw 0.8vw rgba(0, 0, 0, 0.2);
     overflow: hidden;
 }
 
 /* Light sweep effect */
 .main-button .light-sweep {
     position: absolute;
-    width: 180px;
-    height: 180px;
+    width: 82%;
+    height: 82%;
     border-radius: 50%;
     overflow: hidden;
     pointer-events: none;
@@ -207,8 +208,8 @@ html {
 .main-button::after {
     content: '';
     position: absolute;
-    width: 160px;
-    height: 160px;
+    width: 73%;
+    height: 73%;
     border-radius: 50%;
     background:
         radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 20%, rgba(255, 255, 255, 0.1) 40%, transparent 65%),
@@ -220,10 +221,10 @@ html {
 /* Radial Wave Effect */
 .radial-wave {
     position: absolute;
-    width: 200px;
-    height: 200px;
+    width: 91%;
+    height: 91%;
     border-radius: 50%;
-    border: 3px solid rgba(255, 100, 50, 0.6);
+    border: 0.15vw solid rgba(255, 100, 50, 0.6);
     pointer-events: none;
     z-index: 0;
     animation: radialExpand 3s ease-out infinite;
@@ -239,22 +240,22 @@ html {
 
 @keyframes radialExpand {
     0% {
-        width: 200px;
-        height: 200px;
+        width: 91%;
+        height: 91%;
         opacity: 0.8;
-        border-width: 3px;
+        border-width: 0.15vw;
     }
 
     50% {
         opacity: 0.4;
-        border-width: 2px;
+        border-width: 0.1vw;
     }
 
     100% {
-        width: 400px;
-        height: 400px;
+        width: 182%;
+        height: 182%;
         opacity: 0;
-        border-width: 1px;
+        border-width: 0.05vw;
     }
 }
 
@@ -539,106 +540,52 @@ html {
 /* Mobile styles - Landscape */
 @media screen and (max-width: 926px) and (orientation: landscape) {
     .main-button {
-        width: 120px;
-        height: 120px;
-    }
-
-    .main-button::before {
-        width: 100px;
-        height: 100px;
-    }
-
-    .main-button::after {
-        width: 90px;
-        height: 90px;
-    }
-
-    .main-button .light-sweep {
-        width: 100px;
-        height: 100px;
-    }
-
-    .radial-wave {
-        width: 110px;
-        height: 110px;
-    }
-
-    @keyframes radialExpand {
-        0% {
-            width: 110px;
-            height: 110px;
-            opacity: 0.8;
-        }
-
-        100% {
-            width: 220px;
-            height: 220px;
-            opacity: 0;
-        }
+        width: 18vw;
+        height: 18vw;
     }
 
     .buttons-group {
-        gap: 20px;
+        gap: 3vw;
     }
 
     .buttons-gap {
-        width: 60px;
+        width: 8vw;
     }
 
     .buttons-container {
-        margin-bottom: 30px;
+        margin-bottom: 4vw;
     }
 
     .content-wrapper {
-        padding-bottom: 40px;
+        padding-bottom: 5vw;
     }
 
     .countdown-display {
-        font-size: 10rem;
+        font-size: 25vw;
     }
 }
 
 /* Very small landscape screens */
 @media screen and (max-height: 400px) and (orientation: landscape) {
     .main-button {
-        width: 90px;
-        height: 90px;
-    }
-
-    .main-button::before {
-        width: 75px;
-        height: 75px;
-    }
-
-    .main-button::after {
-        width: 65px;
-        height: 65px;
-    }
-
-    .main-button .light-sweep {
-        width: 75px;
-        height: 75px;
-    }
-
-    .radial-wave {
-        width: 80px;
-        height: 80px;
+        width: 20vh;
+        height: 20vh;
     }
 
     .buttons-group {
-        gap: 15px;
+        gap: 3vh;
     }
 
     .buttons-gap {
-        width: 40px;
+        width: 8vh;
     }
 
     .content-wrapper {
-        padding-bottom: 20px;
+        padding-bottom: 3vh;
     }
 
     .countdown-display {
-        font-size: 7rem;
+        font-size: 40vh;
     }
 }
 
