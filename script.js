@@ -193,6 +193,65 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', startCountdown);
     });
 
+    // Touch event for mobile devices
+    buttons.forEach(button => {
+        button.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent double-firing with click
+
+            // Add visual feedback
+            button.style.transform = 'scale(0.95)';
+
+            // Try to lock screen orientation to landscape
+            tryLockLandscape();
+        }, { passive: false });
+
+        button.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            button.style.transform = '';
+            startCountdown();
+        }, { passive: false });
+    });
+
+    // Function to try locking screen to landscape
+    const tryLockLandscape = async () => {
+        try {
+            // Request fullscreen first (required for orientation lock on most browsers)
+            if (document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                await document.documentElement.webkitRequestFullscreen();
+            }
+
+            // Try to lock orientation to landscape
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock('landscape');
+            }
+        } catch (err) {
+            // Orientation lock not supported or denied - that's okay
+            console.log('Orientation lock not available:', err.message);
+        }
+    };
+
+    // Handle orientation change
+    const handleOrientationChange = () => {
+        const rotateOverlay = document.getElementById('rotateOverlay');
+        if (rotateOverlay) {
+            if (window.innerHeight > window.innerWidth && window.innerWidth < 768) {
+                // Portrait mode on mobile
+                rotateOverlay.style.display = 'flex';
+            } else {
+                rotateOverlay.style.display = 'none';
+            }
+        }
+    };
+
+    // Listen for orientation changes
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+
+    // Check on load
+    handleOrientationChange();
+
     // Keyboard event (Enter)
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -200,8 +259,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle initial focus on first button
-    if (buttons.length > 0) {
+    // Handle initial focus on first button (only on non-touch devices)
+    if (buttons.length > 0 && !('ontouchstart' in window)) {
         buttons[0].focus();
     }
+
+    // Prevent zoom on double-tap for iOS
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, { passive: false });
 });
