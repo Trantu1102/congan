@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const countdownDisplay = document.getElementById('countdownDisplay');
     const countdownNumber = document.getElementById('countdownNumber');
     const blurOverlay = document.getElementById('blurOverlay');
+    const startOverlay = document.getElementById('startOverlay');
     const targetUrl = "https://daihoidang.cand.vn/";
     // Beep sound for countdown numbers
     const beepAudio = new Audio('beep.mp3');
@@ -14,6 +15,59 @@ document.addEventListener('DOMContentLoaded', () => {
     explosionAudio.volume = 1.0; // Max volume for explosion
 
     let isCountingDown = false;
+    let isStarted = false;
+
+    // ========================================
+    // Fullscreen Functions
+    // ========================================
+    const enterFullscreen = async () => {
+        try {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                await elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                await elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                await elem.msRequestFullscreen();
+            }
+
+            // Try to lock orientation to landscape on mobile
+            if (screen.orientation && screen.orientation.lock) {
+                try {
+                    await screen.orientation.lock('landscape');
+                } catch (e) {
+                    console.log('Orientation lock not available');
+                }
+            }
+        } catch (err) {
+            console.log('Fullscreen not available:', err.message);
+        }
+    };
+
+    // ========================================
+    // Start Overlay Handler
+    // ========================================
+    const handleStart = async () => {
+        if (isStarted) return;
+        isStarted = true;
+
+        // Enter fullscreen
+        await enterFullscreen();
+
+        // Hide start overlay
+        if (startOverlay) {
+            startOverlay.classList.add('hidden');
+        }
+    };
+
+    // Click/Touch on start overlay
+    if (startOverlay) {
+        startOverlay.addEventListener('click', handleStart);
+        startOverlay.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleStart();
+        }, { passive: false });
+    }
 
     // ========================================
     // Particles System
@@ -197,12 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
     buttons.forEach(button => {
         button.addEventListener('touchstart', (e) => {
             e.preventDefault(); // Prevent double-firing with click
-
             // Add visual feedback
             button.style.transform = 'scale(0.95)';
-
-            // Try to lock screen orientation to landscape
-            tryLockLandscape();
         }, { passive: false });
 
         button.addEventListener('touchend', (e) => {
@@ -212,32 +262,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: false });
     });
 
-    // Function to try locking screen to landscape
-    const tryLockLandscape = async () => {
-        try {
-            // Request fullscreen first (required for orientation lock on most browsers)
-            if (document.documentElement.requestFullscreen) {
-                await document.documentElement.requestFullscreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                await document.documentElement.webkitRequestFullscreen();
-            }
-
-            // Try to lock orientation to landscape
-            if (screen.orientation && screen.orientation.lock) {
-                await screen.orientation.lock('landscape');
-            }
-        } catch (err) {
-            // Orientation lock not supported or denied - that's okay
-            console.log('Orientation lock not available:', err.message);
-        }
-    };
-
     // Handle orientation change
     const handleOrientationChange = () => {
         const rotateOverlay = document.getElementById('rotateOverlay');
         if (rotateOverlay) {
-            if (window.innerHeight > window.innerWidth && window.innerWidth < 768) {
-                // Portrait mode on mobile
+            // Only show rotate overlay if not started yet or if started but in portrait on mobile
+            if (window.innerHeight > window.innerWidth && window.innerWidth < 768 && isStarted) {
                 rotateOverlay.style.display = 'flex';
             } else {
                 rotateOverlay.style.display = 'none';
