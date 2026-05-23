@@ -11,21 +11,28 @@ html {
     padding: 0;
     width: 100%;
     height: 100%;
+    min-height: 100dvh;
     overflow: hidden;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-color);
 }
 
+body {
+    min-height: 100dvh;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
 .background-container {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    min-height: 100dvh;
     /* Fallback color */
     background-color: #8B0000;
     /* User supplied background image */
-    background-image: url('background.jpg');
+    background-image: url('nen.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -41,7 +48,7 @@ html {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    padding-bottom: 10vh;
+    padding-bottom: max(10vh, calc(env(safe-area-inset-bottom, 0px) + 24px));
     z-index: 10;
     pointer-events: none;
 }
@@ -53,10 +60,10 @@ html {
 /* Particles canvas */
 #particlesCanvas {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    min-height: 100dvh;
     pointer-events: none;
     z-index: 1;
 }
@@ -64,10 +71,10 @@ html {
 /* Blur overlay for countdown */
 .blur-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    min-height: 100dvh;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
@@ -109,7 +116,7 @@ html {
 }
 
 .main-button {
-    /* Use viewport width for responsive sizing - 11.5vw ≈ 220px at 1920px width */
+    /* Use viewport width for responsive sizing */
     width: 11.5vw;
     height: 11.5vw;
     border-radius: 50%;
@@ -118,10 +125,10 @@ html {
     transition: transform 0.15s ease;
     outline: none;
     position: relative;
-    /* Simplified animation - removed pulseGlow for performance */
+    /* Removed pulseGlow - filter animation is expensive */
     animation: float 3s ease-in-out infinite;
 
-    /* Glassmorphism effect - reduced blur for performance */
+    /* Glassmorphism - reduced blur for performance */
     background: linear-gradient(135deg,
             rgba(255, 100, 80, 0.2) 0%,
             rgba(255, 50, 30, 0.3) 50%,
@@ -129,7 +136,7 @@ html {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 
-    /* Simplified box-shadow for performance */
+    /* Simplified box-shadow */
     box-shadow:
         0 0.8vw 1.5vw rgba(0, 0, 0, 0.3),
         0 0 2vw rgba(255, 100, 50, 0.4),
@@ -229,19 +236,18 @@ html {
     z-index: 2;
 }
 
-/* Radial Wave Effect */
+/* Radial Wave Effect - GPU optimized with transform */
 .radial-wave {
     position: absolute;
     width: 91%;
     height: 91%;
     border-radius: 50%;
-    border: 0.15vw solid rgba(255, 100, 50, 0.6);
+    border: 2px solid rgba(255, 100, 50, 0.6);
     pointer-events: none;
     z-index: 0;
     animation: radialExpand 3s ease-out infinite;
-    /* GPU acceleration */
     will-change: transform, opacity;
-    transform: translateZ(0);
+    transform: scale(1) translateZ(0);
 }
 
 .radial-wave:nth-child(2) {
@@ -252,6 +258,7 @@ html {
     animation-delay: 2s;
 }
 
+/* Use transform scale instead of width/height for GPU acceleration */
 @keyframes radialExpand {
     0% {
         transform: scale(1) translateZ(0);
@@ -278,6 +285,7 @@ html {
     animation-delay: 0.4s !important;
 }
 
+/* Fast radial wave - GPU optimized */
 @keyframes radialExpandFast {
     0% {
         transform: scale(1) translateZ(0);
@@ -289,8 +297,6 @@ html {
         opacity: 0;
     }
 }
-
-/* Removed pulseGlow animation - too expensive with filter property */
 
 .main-button:hover {
     transform: scale(1.05);
@@ -493,10 +499,10 @@ html {
 
 .start-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    min-height: 100dvh;
     background: linear-gradient(135deg, #1a0505 0%, #3d0a0a 30%, #5a1010 50%, #3d0a0a 70%, #1a0505 100%);
     z-index: 10000;
     display: flex;
@@ -585,10 +591,10 @@ html {
 .rotate-overlay {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    min-height: 100dvh;
     background: linear-gradient(135deg, #1a0a0a 0%, #3d0a0a 50%, #1a0a0a 100%);
     z-index: 9999;
     justify-content: center;
@@ -650,6 +656,10 @@ html {
 
 /* Mobile styles - Landscape */
 @media screen and (max-width: 926px) and (orientation: landscape) {
+    .buttons-wrapper {
+        padding-bottom: max(4vw, calc(env(safe-area-inset-bottom, 0px) + 12px));
+    }
+
     .main-button {
         width: 18vw;
         height: 18vw;
@@ -678,6 +688,10 @@ html {
 
 /* Very small landscape screens */
 @media screen and (max-height: 400px) and (orientation: landscape) {
+    .buttons-wrapper {
+        padding-bottom: max(3vh, calc(env(safe-area-inset-bottom, 0px) + 8px));
+    }
+
     .main-button {
         width: 20vh;
         height: 20vh;
@@ -703,18 +717,26 @@ html {
 /* Touch-friendly improvements */
 @media (hover: none) and (pointer: coarse) {
     .main-button {
-        /* Remove hover animations on touch devices */
         animation: float 3s ease-in-out infinite, pulseGlow 2s ease-in-out infinite;
-        /* Ensure good touch target size */
         min-width: 44px;
         min-height: 44px;
-        /* Add touch feedback */
-        -webkit-tap-highlight-color: rgba(255, 200, 100, 0.3);
+        -webkit-tap-highlight-color: rgba(255, 200, 100, 0.2);
         touch-action: manipulation;
     }
 
     .main-button:active {
         transform: scale(0.95);
         transition: transform 0.1s ease;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

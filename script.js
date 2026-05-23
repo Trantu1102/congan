@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const countdownNumber = document.getElementById('countdownNumber');
     const blurOverlay = document.getElementById('blurOverlay');
     const startOverlay = document.getElementById('startOverlay');
-    const targetUrl = "https://daihoidang.cand.vn/";
+    const targetUrl = "https://cand.vn/";
     // Beep sound for countdown numbers
     const beepAudio = new Audio('beep.mp3');
     // Explosion sound for zero
@@ -75,15 +75,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('particlesCanvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
-    const particleCount = 50; // Reduced for better performance
+    const isMobile = window.matchMedia('(max-width: 926px)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const particleCount = prefersReducedMotion ? 0 : (isMobile ? 20 : 40);
 
     // Resize canvas to full screen
     const resizeCanvas = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const viewport = window.visualViewport;
+        canvas.width = Math.round(viewport ? viewport.width : window.innerWidth);
+        canvas.height = Math.round(viewport ? viewport.height : window.innerHeight);
     };
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', resizeCanvas);
+    }
 
     // Particle class
     class Particle {
@@ -122,9 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
             this.twinkleOffset = Math.random() * Math.PI * 2;
         }
 
-        update() {
+        update(timestamp) {
             this.x += this.speedX;
             this.y += this.speedY;
+
+            // Twinkle effect - use cached timestamp
+            this.currentOpacity = this.opacity * (0.5 + 0.5 * Math.sin(timestamp * this.twinkleSpeed + this.twinkleOffset));
 
             // Reset particle if out of bounds
             if (this.x < -10 || this.x > canvas.width + 10 ||
@@ -141,15 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        draw(timestamp) {
-            // Twinkle effect - use cached timestamp
-            this.currentOpacity = this.opacity * (0.5 + 0.5 * Math.sin(timestamp * this.twinkleSpeed + this.twinkleOffset));
-
+        draw() {
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fillStyle = this.color + this.currentOpacity + ')';
             ctx.fill();
-            // Removed expensive shadowBlur for performance
+            // Removed shadowBlur - too expensive
         }
     }
 
@@ -161,21 +167,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Animate particles with timestamp caching
+    // Animate particles with timestamp
     const animateParticles = (timestamp) => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        particles.forEach(particle => {
-            particle.update();
-            particle.draw(timestamp);
-        });
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update(timestamp);
+            particles[i].draw();
+        }
 
         requestAnimationFrame(animateParticles);
     };
 
     // Start particles system
-    initParticles();
-    animateParticles();
+    if (particleCount > 0) {
+        initParticles();
+        animateParticles();
+    }
 
     const playBeep = () => {
         beepAudio.currentTime = 0;
@@ -230,13 +238,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         playExplosion();
 
-                        // Add zoom out animation to the number, not the container
+                        // Add zoom out animation to the number
                         countdownNumber.style.animation = 'zoomOut 1s ease-in forwards';
 
-                        // Delay redirect to let explosion sound play and zoom out animation complete
+                        // Redirect early while zoom is still happening (avoid black screen)
                         setTimeout(() => {
                             window.location.href = targetUrl;
-                        }, 1500);
+                        }, 500); // Redirect at 50% of zoom, before it goes invisible
                     }, 1000); // Wait 1 second after showing "1"
                 }
             }
