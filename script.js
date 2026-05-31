@@ -64,16 +64,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Enter fullscreen
         await enterFullscreen();
 
-        // Unlock audio on iOS/mobile browsers
+        // Unlock audio on iOS/mobile browsers without glitching
         [beepAudio, explosionAudio, nhacAudio].forEach(audio => {
-            audio.volume = 0; // mute temporarily
-            audio.play().then(() => {
-                audio.pause();
-                audio.currentTime = 0;
-                // Restore volumes
-                if (audio === beepAudio) audio.volume = 0.3;
-                else audio.volume = 1.0;
-            }).catch(e => console.log("Audio unlock failed", e));
+            audio.muted = true; // Mute reliably
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.muted = false; // Restore sound
+                }).catch(e => {
+                    audio.muted = false;
+                    console.log("Audio unlock failed", e);
+                });
+            }
         });
 
         // Hide start overlay
