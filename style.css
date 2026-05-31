@@ -1,4 +1,8 @@
 :root {
+    /* --- BẠN CÓ THỂ CHỈNH ĐỘ CAO CỦA CÁC NÚT BẤM Ở ĐÂY --- */
+    /* Thay đổi giá trị này (ví dụ: 15vh, 20vh, 25vh...) để đưa nút lên cao hoặc xuống thấp */
+    --buttons-bottom-spacing: 45cqh;
+
     --primary-red: #D50000;
     --dark-red: #8B0000;
     --light-red: #FF1744;
@@ -11,29 +15,40 @@ html {
     padding: 0;
     width: 100%;
     height: 100%;
-    min-height: 100dvh;
     overflow: hidden;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-color);
+    background-color: #000;
 }
 
 body {
-    min-height: 100dvh;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.led-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 56.25vw;
+    max-height: 100vh;
+    max-width: 177.7777vh;
+    overflow: hidden;
+    container-type: size;
 }
 
 .background-container {
-    position: fixed;
+    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    min-height: 100dvh;
     /* Fallback color */
-    background-color: #8B0000;
+    background-color: #000;
     /* User supplied background image */
-    background-image: url('nen.png');
-    background-size: cover;
+    background-image: url('bg led.png');
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     z-index: 0;
@@ -41,14 +56,14 @@ body {
 
 /* Wrapper for buttons - positioned above blur overlay */
 .buttons-wrapper {
-    position: fixed;
+    position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    padding-bottom: max(10vh, calc(env(safe-area-inset-bottom, 0px) + 24px));
+    padding-bottom: var(--buttons-bottom-spacing);
     z-index: 10;
     pointer-events: none;
 }
@@ -59,22 +74,21 @@ body {
 
 /* Particles canvas */
 #particlesCanvas {
-    position: fixed;
+    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    min-height: 100dvh;
     pointer-events: none;
     z-index: 1;
 }
 
 /* Blur overlay for countdown */
 .blur-overlay {
-    position: fixed;
+    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    min-height: 100dvh;
+
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
@@ -90,13 +104,20 @@ body {
     -webkit-backdrop-filter: blur(8px);
 }
 
+@media screen and (max-width: 768px) {
+    .blur-overlay.active {
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+    }
+}
+
 /* Buttons container for 2 groups */
 .buttons-container {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 0;
-    margin-bottom: 3vw;
+    margin-bottom: 3cqw;
     position: relative;
     z-index: 10;
 }
@@ -104,23 +125,23 @@ body {
 /* Group of 3 buttons */
 .buttons-group {
     display: flex;
-    gap: 2.5vw;
+    gap: 2.5cqw;
     justify-content: center;
     align-items: center;
 }
 
 /* Gap divider between two groups */
 .buttons-gap {
-    width: 7vw;
+    width: 7cqw;
     /* Larger gap between group 3 and 4 */
 }
 
 .main-button {
     /* Use viewport width for responsive sizing */
-    width: 11.5vw;
-    height: 11.5vw;
+    width: 11.5cqw;
+    height: 11.5cqw;
     border-radius: 50%;
-    border: 0.1vw solid rgba(255, 255, 255, 0.3);
+    border: 0.1cqw solid rgba(255, 255, 255, 0.3);
     cursor: pointer;
     transition: transform 0.15s ease;
     outline: none;
@@ -131,19 +152,19 @@ body {
     /* Glassmorphism - reduced blur for performance */
     background: radial-gradient(circle at 35% 28%,
             rgba(255, 255, 255, 0.34) 0%,
-            rgba(255, 160, 140, 0.22) 16%,
-            rgba(255, 95, 70, 0.38) 42%,
-            rgba(225, 35, 20, 0.58) 72%,
-            rgba(165, 10, 8, 0.72) 100%);
+            rgba(120, 210, 190, 0.22) 16%,
+            rgba(40, 160, 140, 0.38) 42%,
+            rgba(10, 110, 95, 0.58) 72%,
+            rgba(5, 75, 65, 0.72) 100%);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
 
     /* Simplified box-shadow */
     box-shadow:
-        0 0.8vw 1.5vw rgba(0, 0, 0, 0.28),
-        0 0 1.2vw rgba(255, 120, 90, 0.28),
-        inset 0 0.2vw 0.8vw rgba(255, 255, 255, 0.28),
-        inset 0 -0.55vw 1vw rgba(110, 8, 8, 0.28);
+        0 0.8cqw 1.5cqw rgba(0, 0, 0, 0.28),
+        0 0 1.2cqw rgba(40, 160, 140, 0.28),
+        inset 0 0.2cqw 0.8cqw rgba(255, 255, 255, 0.28),
+        inset 0 -0.55cqw 1cqw rgba(5, 75, 65, 0.28);
 
     display: flex;
     justify-content: center;
@@ -159,9 +180,9 @@ body {
     transform: translateY(-8px) scale(1.04);
     box-shadow:
         0 20px 45px rgba(0, 0, 0, 0.42),
-        0 0 28px rgba(255, 110, 70, 0.4),
+        0 0 28px rgba(40, 160, 140, 0.4),
         inset 0 3px 16px rgba(255, 255, 255, 0.35),
-        inset 0 -8px 18px rgba(100, 10, 10, 0.28);
+        inset 0 -8px 18px rgba(5, 75, 65, 0.28);
 }
 
 /* Light sweep effect */
@@ -197,7 +218,7 @@ body {
     display: block;
     position: relative;
     z-index: 1;
-    filter: drop-shadow(0 0.2vw 0.35vw rgba(0, 0, 0, 0.3)) drop-shadow(0 0 0.28vw rgba(255, 215, 120, 0.22));
+    filter: drop-shadow(0 0.2cqw 0.35cqw rgba(0, 0, 0, 0.3)) drop-shadow(0 0 0.28cqw rgba(255, 215, 120, 0.22));
     transform: translateY(-1%);
 }
 
@@ -244,7 +265,7 @@ body {
     width: 91%;
     height: 91%;
     border-radius: 50%;
-    border: 2px solid rgba(255, 100, 50, 0.6);
+    border: 2px solid rgba(40, 160, 140, 0.6);
     pointer-events: none;
     z-index: 0;
     animation: radialExpand 3s ease-out infinite;
@@ -304,13 +325,13 @@ body {
     transform: scale(1.05);
     border-color: rgba(255, 255, 255, 0.5);
     background: linear-gradient(135deg,
-            rgba(255, 120, 100, 0.2) 0%,
-            rgba(255, 70, 50, 0.3) 50%,
-            rgba(220, 50, 30, 0.35) 100%);
+            rgba(100, 200, 180, 0.2) 0%,
+            rgba(50, 160, 140, 0.3) 50%,
+            rgba(30, 130, 115, 0.35) 100%);
     box-shadow:
         0 18px 40px rgba(0, 0, 0, 0.5),
-        0 0 40px rgba(255, 100, 50, 0.6),
-        0 0 80px rgba(255, 50, 0, 0.3),
+        0 0 40px rgba(50, 160, 140, 0.6),
+        0 0 80px rgba(20, 140, 120, 0.3),
         inset 0 2px 15px rgba(255, 255, 255, 0.4),
         inset 0 -2px 15px rgba(0, 0, 0, 0.2);
 }
@@ -361,11 +382,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 18rem;
+    font-size: 18cqw;
     font-weight: 900;
     perspective: 1000px;
     z-index: 15;
@@ -500,11 +521,11 @@ body {
    ======================================== */
 
 .start-overlay {
-    position: fixed;
+    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    min-height: 100dvh;
+
     background: linear-gradient(135deg, #1a0505 0%, #3d0a0a 30%, #5a1010 50%, #3d0a0a 70%, #1a0505 100%);
     z-index: 10000;
     display: flex;
@@ -526,25 +547,25 @@ body {
 }
 
 .start-icon {
-    font-size: 100px;
-    margin-bottom: 30px;
+    font-size: 5.2cqw;
+    margin-bottom: 1.5cqw;
     animation: bounceIcon 1.5s ease-in-out infinite;
 }
 
 .start-text {
-    font-size: 42px;
+    font-size: 2.2cqw;
     font-weight: 900;
     color: #FFD700;
     text-shadow:
-        0 0 20px rgba(255, 215, 0, 0.8),
-        0 0 40px rgba(255, 215, 0, 0.5),
-        0 4px 8px rgba(0, 0, 0, 0.5);
-    margin-bottom: 15px;
-    letter-spacing: 2px;
+        0 0 1cqw rgba(255, 215, 0, 0.8),
+        0 0 2cqw rgba(255, 215, 0, 0.5),
+        0 0.2cqw 0.4cqw rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.8cqw;
+    letter-spacing: 0.1cqw;
 }
 
 .start-subtext {
-    font-size: 18px;
+    font-size: 1cqw;
     color: rgba(255, 255, 255, 0.7);
     animation: blink 1.5s ease-in-out infinite;
 }
@@ -569,7 +590,7 @@ body {
     }
 
     50% {
-        transform: translateY(-15px);
+        transform: translateY(-0.8cqw);
     }
 }
 
@@ -589,187 +610,67 @@ body {
    MOBILE RESPONSIVE STYLES
    ======================================== */
 
-/* Portrait orientation overlay - suggest rotating */
-.rotate-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 100dvh;
-    background: linear-gradient(135deg, #1a0a0a 0%, #3d0a0a 50%, #1a0a0a 100%);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    text-align: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
 
-.rotate-overlay .rotate-icon {
-    font-size: 80px;
-    margin-bottom: 30px;
-    animation: rotatePhone 2s ease-in-out infinite;
-}
 
-.rotate-overlay .rotate-text {
-    font-size: 24px;
-    font-weight: 700;
-    color: #FFD700;
-    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
-    margin-bottom: 10px;
-}
 
-.rotate-overlay .rotate-subtext {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.7);
-}
-
-@keyframes rotatePhone {
-
-    0%,
-    100% {
-        transform: rotate(0deg);
-    }
-
-    25% {
-        transform: rotate(-15deg);
-    }
-
-    75% {
-        transform: rotate(90deg);
-    }
-}
-
-/* Mobile styles - Portrait */
-@media screen and (max-width: 768px) and (orientation: portrait) {
-    .rotate-overlay {
-        display: none !important;
-    }
-
-    .buttons-wrapper {
-        align-items: center;
-        padding: max(16px, env(safe-area-inset-top, 0px) + 12px) 0 max(24px, calc(env(safe-area-inset-bottom, 0px) + 20px));
-    }
-
-    .buttons-container {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 5vw 7vw;
-        margin-bottom: 0;
-        width: min(92vw, 420px);
-        justify-items: center;
-        align-items: center;
-    }
-
-    .buttons-group {
-        display: contents;
-    }
-
-    .buttons-gap {
-        display: none;
-    }
-
-    .main-button {
-        width: 26vw;
-        height: 26vw;
-        max-width: 122px;
-        max-height: 122px;
-        border-width: 1px;
-    }
-
-    .button-logo-shell {
-        width: 70%;
-        height: 70%;
-        box-shadow: none;
-    }
-
-    .button-logo {
-        width: 86%;
-        height: 86%;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.28)) drop-shadow(0 0 6px rgba(255, 215, 120, 0.3));
-    }
-
-    .countdown-display {
-        font-size: 32vw;
-    }
-
-    .start-icon {
-        font-size: 72px;
-        margin-bottom: 20px;
-    }
-
-    .start-text {
-        font-size: 32px;
-        letter-spacing: 1px;
-        padding: 0 16px;
-    }
-
-    .start-subtext,
-    .rotate-overlay .rotate-subtext {
-        font-size: 15px;
-        padding: 0 12px;
-    }
-}
 
 /* Mobile styles - Landscape */
 @media screen and (max-width: 926px) and (orientation: landscape) {
     .buttons-wrapper {
-        padding-bottom: max(4vw, calc(env(safe-area-inset-bottom, 0px) + 12px));
+        padding-bottom: max(4cqw, calc(env(safe-area-inset-bottom, 0px) + 12px));
     }
 
     .main-button {
-        width: 18vw;
-        height: 18vw;
+        width: 18cqw;
+        height: 18cqw;
     }
 
     .buttons-group {
-        gap: 3vw;
+        gap: 3cqw;
     }
 
     .buttons-gap {
-        width: 8vw;
+        width: 8cqw;
     }
 
     .buttons-container {
-        margin-bottom: 4vw;
+        margin-bottom: 4cqw;
     }
 
     .content-wrapper {
-        padding-bottom: 5vw;
+        padding-bottom: 5cqw;
     }
 
     .countdown-display {
-        font-size: 25vw;
+        font-size: 25cqw;
     }
 }
 
 /* Very small landscape screens */
 @media screen and (max-height: 400px) and (orientation: landscape) {
     .buttons-wrapper {
-        padding-bottom: max(3vh, calc(env(safe-area-inset-bottom, 0px) + 8px));
+        padding-bottom: max(3cqh, calc(env(safe-area-inset-bottom, 0px) + 8px));
     }
 
     .main-button {
-        width: 20vh;
-        height: 20vh;
+        width: 20cqh;
+        height: 20cqh;
     }
 
     .buttons-group {
-        gap: 3vh;
+        gap: 3cqh;
     }
 
     .buttons-gap {
-        width: 8vh;
+        width: 8cqh;
     }
 
     .content-wrapper {
-        padding-bottom: 3vh;
+        padding-bottom: 3cqh;
     }
 
     .countdown-display {
-        font-size: 40vh;
+        font-size: 40cqh;
     }
 }
 
@@ -790,6 +691,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {

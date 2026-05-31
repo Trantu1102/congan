@@ -9,13 +9,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const beepAudio = new Audio('beep.mp3');
     // Explosion sound for zero
     const explosionAudio = new Audio('explosion.mp3');
+    // Background music after countdown
+    const nhacAudio = new Audio('nhac.mp3');
 
     // Adjust volume levels
     beepAudio.volume = 0.3; // Quieter beep
     explosionAudio.volume = 1.0; // Max volume for explosion
+    nhacAudio.volume = 1.0; // Max volume for background music
 
     let isCountingDown = false;
     let isStarted = false;
+    let isReady = false; // Trạng thái đã ấn Enter để hiện nút
+    let isFinished = false; // Trạng thái đếm ngược xong
+    
+    const buttonsWrapper = document.querySelector('.buttons-wrapper');
+    if (buttonsWrapper) {
+        buttonsWrapper.classList.add('hide');
+    }
 
     // ========================================
     // Fullscreen Functions
@@ -79,11 +89,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const particleCount = prefersReducedMotion ? 0 : (isMobile ? 20 : 40);
 
-    // Resize canvas to full screen
+    // Resize canvas to match the led-wrapper container
     const resizeCanvas = () => {
-        const viewport = window.visualViewport;
-        canvas.width = Math.round(viewport ? viewport.width : window.innerWidth);
-        canvas.height = Math.round(viewport ? viewport.height : window.innerHeight);
+        const wrapper = document.querySelector('.led-wrapper');
+        if (wrapper) {
+            canvas.width = wrapper.clientWidth;
+            canvas.height = wrapper.clientHeight;
+        } else {
+            const viewport = window.visualViewport;
+            canvas.width = Math.round(viewport ? viewport.width : window.innerWidth);
+            canvas.height = Math.round(viewport ? viewport.height : window.innerHeight);
+        }
     };
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
@@ -241,10 +257,29 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Add zoom out animation to the number
                         countdownNumber.style.animation = 'zoomOut 1s ease-in forwards';
 
-                        // Redirect early while zoom is still happening (avoid black screen)
+                        // Chuyển nền sang bg led_1.png và tắt hiệu ứng mờ
                         setTimeout(() => {
-                            window.location.href = targetUrl;
-                        }, 500); // Redirect at 50% of zoom, before it goes invisible
+                            const bgContainer = document.querySelector('.background-container');
+                            if (bgContainer) {
+                                // Thêm transition chồng mờ 1.5s
+                                bgContainer.style.transition = 'background-image 1.5s ease-in-out';
+                                // Sử dụng mã hóa %20 cho dấu cách để đảm bảo tương thích
+                                bgContainer.style.backgroundImage = 'url("bg%20led_1.png")';
+                                
+                                // Play nhac.mp3
+                                nhacAudio.currentTime = 0;
+                                nhacAudio.play().catch(e => console.log("Nhac audio play failed:", e));
+                            }
+                            blurOverlay.classList.remove('active');
+                            
+                            // Ẩn các nút bấm đi để hiện rõ nền mới
+                            const buttonsWrapper = document.querySelector('.buttons-wrapper');
+                            if (buttonsWrapper) {
+                                buttonsWrapper.style.display = 'none';
+                            }
+                            
+                            isFinished = true; // Đánh dấu đã xong để xử lý tap/click reset
+                        }, 500); // Wait 500ms into the 1s zoomOut animation
                     }, 1000); // Wait 1 second after showing "1"
                 }
             }
@@ -271,27 +306,65 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: false });
     });
 
-    // Handle orientation change
-    const handleOrientationChange = () => {
-        const rotateOverlay = document.getElementById('rotateOverlay');
-        if (rotateOverlay) {
-            rotateOverlay.style.display = 'none';
-        }
-    };
 
-    // Listen for orientation changes
-    window.addEventListener('orientationchange', handleOrientationChange);
-    window.addEventListener('resize', handleOrientationChange);
 
-    // Check on load
-    handleOrientationChange();
-
-    // Keyboard event (Enter)
+    // Keyboard events
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            startCountdown();
+            // Nếu chưa ready và chưa đếm ngược -> chuyển sang trạng thái hiện nút và mờ nền
+            if (!isReady && !isCountingDown) {
+                isReady = true;
+                if (buttonsWrapper) buttonsWrapper.classList.remove('hide');
+                blurOverlay.classList.add('active');
+            }
+        } else if (e.key === '1') {
+            // Nếu đã ready thì ấn 1 sẽ đếm ngược
+            if (isReady && !isCountingDown) {
+                startCountdown();
+            }
+        } else if (e.key === '2') {
+            // Bấm 2 để quay lại nền ban đầu với hiệu ứng chồng mờ
+            const bgContainer = document.querySelector('.background-container');
+            if (bgContainer) {
+                bgContainer.style.transition = 'background-image 1.5s ease-in-out';
+                bgContainer.style.backgroundImage = 'url("bg%20led.png")';
+                
+                // Tắt nhạc khi quay về nền cũ
+                nhacAudio.pause();
+                nhacAudio.currentTime = 0;
+            }
         }
     });
+
+    // Thêm điều khiển bằng màn hình cảm ứng/chuột thay cho phím cứng
+    const bgContainer = document.querySelector('.background-container');
+    if (bgContainer) {
+        bgContainer.addEventListener('click', (e) => {
+            // Ngăn sự kiện này kích hoạt lung tung
+            e.preventDefault();
+
+            // Tương đương ấn phím 'Enter'
+            if (!isReady && !isCountingDown && !isFinished) {
+                isReady = true;
+                if (buttonsWrapper) buttonsWrapper.classList.remove('hide');
+                blurOverlay.classList.add('active');
+            } 
+            // Tương đương ấn phím '2'
+            else if (isFinished) {
+                bgContainer.style.transition = 'background-image 1.5s ease-in-out';
+                bgContainer.style.backgroundImage = 'url("bg%20led.png")';
+                
+                // Tắt nhạc khi quay về nền cũ
+                nhacAudio.pause();
+                nhacAudio.currentTime = 0;
+                
+                // Reset lại trạng thái để có thể bắt đầu lại từ đầu
+                isFinished = false;
+                isReady = false;
+                isCountingDown = false;
+            }
+        });
+    }
 
     // Handle initial focus on first button (only on non-touch devices)
     if (buttons.length > 0 && !('ontouchstart' in window)) {
