@@ -47,7 +47,7 @@ body {
     /* Fallback color */
     background-color: #000;
     /* User supplied background image */
-    background-image: url('bg led.png');
+    background-image: url('bg led.jpg');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;

@@ -64,6 +64,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Enter fullscreen
         await enterFullscreen();
 
+        // Unlock audio on iOS/mobile browsers
+        [beepAudio, explosionAudio, nhacAudio].forEach(audio => {
+            audio.volume = 0; // mute temporarily
+            audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+                // Restore volumes
+                if (audio === beepAudio) audio.volume = 0.3;
+                else audio.volume = 1.0;
+            }).catch(e => console.log("Audio unlock failed", e));
+        });
+
         // Hide start overlay
         if (startOverlay) {
             startOverlay.classList.add('hidden');
@@ -264,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 // Thêm transition chồng mờ 1.5s
                                 bgContainer.style.transition = 'background-image 1.5s ease-in-out';
                                 // Sử dụng mã hóa %20 cho dấu cách để đảm bảo tương thích
-                                bgContainer.style.backgroundImage = 'url("bg%20led_1.png")';
+                                bgContainer.style.backgroundImage = 'url("bg%20led_1.jpg")';
                                 
                                 // Play nhac.mp3
                                 nhacAudio.currentTime = 0;
@@ -327,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const bgContainer = document.querySelector('.background-container');
             if (bgContainer) {
                 bgContainer.style.transition = 'background-image 1.5s ease-in-out';
-                bgContainer.style.backgroundImage = 'url("bg%20led.png")';
+                bgContainer.style.backgroundImage = 'url("bg%20led.jpg")';
                 
                 // Tắt nhạc khi quay về nền cũ
                 nhacAudio.pause();
@@ -352,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Tương đương ấn phím '2'
             else if (isFinished) {
                 bgContainer.style.transition = 'background-image 1.5s ease-in-out';
-                bgContainer.style.backgroundImage = 'url("bg%20led.png")';
+                bgContainer.style.backgroundImage = 'url("bg%20led.jpg")';
                 
                 // Tắt nhạc khi quay về nền cũ
                 nhacAudio.pause();
