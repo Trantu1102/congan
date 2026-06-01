@@ -39,6 +39,14 @@ body {
     container-type: size;
 }
 
+.background-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
 .background-container {
     position: absolute;
     inset: 0;
@@ -46,12 +54,23 @@ body {
     height: 100%;
     /* Fallback color */
     background-color: #000;
-    /* User supplied background image */
-    background-image: url('bg led.jpg');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
+    transition: opacity 1.5s ease-in-out;
+    will-change: opacity;
+}
+
+.background-container.bg-1 {
+    background-image: url('bg led.jpg');
+    z-index: 1;
+    opacity: 1;
+}
+
+.background-container.bg-2 {
+    background-image: url('bg led_1.jpg');
     z-index: 0;
+    opacity: 0;
 }
 
 /* Wrapper for buttons - positioned above blur overlay */
@@ -95,13 +114,14 @@ body {
     opacity: 0;
     pointer-events: none;
     z-index: 5;
-    transition: backdrop-filter 0.5s ease, opacity 0.5s ease;
+    transition: backdrop-filter 1.5s ease, opacity 1.5s ease;
 }
 
 .blur-overlay.active {
     opacity: 1;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    transition: backdrop-filter 0.5s ease, opacity 0.5s ease;
 }
 
 @media screen and (max-width: 768px) {

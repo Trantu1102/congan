@@ -275,12 +275,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Chuyển nền sang bg led_1.png và tắt hiệu ứng mờ
                         setTimeout(() => {
-                            const bgContainer = document.querySelector('.background-container');
-                            if (bgContainer) {
-                                // Thêm transition chồng mờ 1.5s
-                                bgContainer.style.transition = 'background-image 1.5s ease-in-out';
-                                // Sử dụng mã hóa %20 cho dấu cách để đảm bảo tương thích
-                                bgContainer.style.backgroundImage = 'url("bg%20led_1.jpg")';
+                            const bg1 = document.querySelector('.background-container.bg-1');
+                            const bg2 = document.querySelector('.background-container.bg-2');
+                            if (bg1 && bg2) {
+                                // Transition opacity 1.5s (cross-fade)
+                                bg1.style.opacity = '0';
+                                bg2.style.opacity = '1';
                                 
                                 // Play nhac.mp3
                                 nhacAudio.currentTime = 0;
@@ -330,7 +330,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Nếu chưa ready và chưa đếm ngược -> chuyển sang trạng thái hiện nút và mờ nền
             if (!isReady && !isCountingDown) {
                 isReady = true;
-                if (buttonsWrapper) buttonsWrapper.classList.remove('hide');
+                if (buttonsWrapper) {
+                    buttonsWrapper.classList.remove('hide');
+                    buttonsWrapper.style.display = '';
+                }
                 blurOverlay.classList.add('active');
             }
         } else if (e.key === '1') {
@@ -340,39 +343,71 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (e.key === '2') {
             // Bấm 2 để quay lại nền ban đầu với hiệu ứng chồng mờ
-            const bgContainer = document.querySelector('.background-container');
-            if (bgContainer) {
-                bgContainer.style.transition = 'background-image 1.5s ease-in-out';
-                bgContainer.style.backgroundImage = 'url("bg%20led.jpg")';
-                
-                // Tắt nhạc khi quay về nền cũ
-                nhacAudio.pause();
-                nhacAudio.currentTime = 0;
+            const bg1 = document.querySelector('.background-container.bg-1');
+            const bg2 = document.querySelector('.background-container.bg-2');
+            if (bg1 && bg2) {
+                bg1.style.opacity = '1';
+                bg2.style.opacity = '0';
             }
+            
+            // Tắt nhạc khi quay về nền cũ
+            nhacAudio.pause();
+            nhacAudio.currentTime = 0;
+
+            // Reset buttons wrapper and waves
+            if (buttonsWrapper) {
+                buttonsWrapper.style.display = '';
+                buttonsWrapper.classList.add('hide');
+            }
+            buttons.forEach(btn => {
+                const waves = btn.querySelectorAll('.radial-wave');
+                waves.forEach(wave => wave.classList.remove('radial-wave-fast'));
+            });
+
+            isFinished = false;
+            isReady = false;
+            isCountingDown = false;
         }
     });
 
     // Thêm điều khiển bằng màn hình cảm ứng/chuột thay cho phím cứng
-    const bgContainer = document.querySelector('.background-container');
-    if (bgContainer) {
-        bgContainer.addEventListener('click', (e) => {
+    const bgWrapper = document.querySelector('.background-wrapper');
+    if (bgWrapper) {
+        bgWrapper.addEventListener('click', (e) => {
             // Ngăn sự kiện này kích hoạt lung tung
             e.preventDefault();
 
             // Tương đương ấn phím 'Enter'
             if (!isReady && !isCountingDown && !isFinished) {
                 isReady = true;
-                if (buttonsWrapper) buttonsWrapper.classList.remove('hide');
+                if (buttonsWrapper) {
+                    buttonsWrapper.classList.remove('hide');
+                    buttonsWrapper.style.display = '';
+                }
                 blurOverlay.classList.add('active');
             } 
             // Tương đương ấn phím '2'
             else if (isFinished) {
-                bgContainer.style.transition = 'background-image 1.5s ease-in-out';
-                bgContainer.style.backgroundImage = 'url("bg%20led.jpg")';
+                const bg1 = document.querySelector('.background-container.bg-1');
+                const bg2 = document.querySelector('.background-container.bg-2');
+                if (bg1 && bg2) {
+                    bg1.style.opacity = '1';
+                    bg2.style.opacity = '0';
+                }
                 
                 // Tắt nhạc khi quay về nền cũ
                 nhacAudio.pause();
                 nhacAudio.currentTime = 0;
+                
+                // Reset buttons wrapper and waves
+                if (buttonsWrapper) {
+                    buttonsWrapper.style.display = '';
+                    buttonsWrapper.classList.add('hide');
+                }
+                buttons.forEach(btn => {
+                    const waves = btn.querySelectorAll('.radial-wave');
+                    waves.forEach(wave => wave.classList.remove('radial-wave-fast'));
+                });
                 
                 // Reset lại trạng thái để có thể bắt đầu lại từ đầu
                 isFinished = false;
