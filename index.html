@@ -10,7 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="preload" href="bg led.jpg" as="image">
-    <link rel="preload" href="bg led_1.jpg" as="image">
     <link rel="preload" href="logo led.png" as="image">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -32,6 +31,12 @@
         <!-- Blur overlay for countdown -->
         <div id="blurOverlay" class="blur-overlay"></div>
 
+        <!-- Flash overlay for light explosion -->
+        <div id="flashOverlay" class="flash-overlay">
+            <div class="shockwave"></div>
+            <div class="flare-core"></div>
+        </div>
+
         <!-- Countdown display - OUTSIDE background-container to avoid blur -->
         <div id="countdownDisplay" class="countdown-display hide">
             <span id="countdownNumber">5</span>
@@ -40,7 +45,9 @@
         <!-- Background layers -->
         <div class="background-wrapper">
             <div class="background-container bg-1"></div>
-            <div class="background-container bg-2"></div>
+            <video id="eventVideo" class="event-video" preload="auto" playsinline webkit-playsinline muted>
+                <source src="Video/clip_2.mp4" type="video/mp4">
+            </video>
         </div>
 
         <!-- Buttons container - OUTSIDE background to avoid blur -->

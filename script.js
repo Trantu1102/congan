@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const countdownNumber = document.getElementById('countdownNumber');
     const blurOverlay = document.getElementById('blurOverlay');
     const startOverlay = document.getElementById('startOverlay');
+    const flashOverlay = document.getElementById('flashOverlay');
+    const eventVideo = document.getElementById('eventVideo');
     const targetUrl = "https://cand.vn/";
     // Beep sound for countdown numbers
     const beepAudio = new Audio('beep.mp3');
@@ -16,6 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     beepAudio.volume = 0.3; // Quieter beep
     explosionAudio.volume = 1.0; // Max volume for explosion
     nhacAudio.volume = 1.0; // Max volume for background music
+    if (eventVideo) {
+        eventVideo.volume = 1.0; // Max volume for the event video
+    }
 
     let isCountingDown = false;
     let isStarted = false;
@@ -79,6 +84,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
+
+        // Preload and warm up the video decoder to prevent lag/delay on play
+        if (eventVideo) {
+            eventVideo.load();
+            eventVideo.play().then(() => {
+                eventVideo.pause();
+                eventVideo.currentTime = 0;
+                eventVideo.muted = false; // Unmute so sound plays when active
+            }).catch(e => {
+                console.log("Video pre-warm failed:", e);
+            });
+        }
 
         // Hide start overlay
         if (startOverlay) {
@@ -191,6 +208,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Spark particle class for the explosion effect
+    class SparkParticle {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 8 + 4; // Fast radiating speed
+            this.speedX = Math.cos(angle) * speed;
+            this.speedY = Math.sin(angle) * speed - 1.5; // Slight upward bias
+            this.size = Math.random() * 5 + 2; // Size
+            this.opacity = 1;
+            this.decay = Math.random() * 0.02 + 0.015; // Fade decay
+            this.gravity = 0.08; // Gravity pulls sparks downward
+            
+            const colors = [
+                'rgba(255, 255, 255, ', // White hot
+                'rgba(0, 229, 255, ',   // Neon Cyan
+                'rgba(0, 150, 255, ',   // Electric Blue
+                'rgba(130, 240, 255, '  // Light Ice Blue
+            ];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            this.speedY += this.gravity;
+            this.opacity -= this.decay;
+        }
+
+        draw() {
+            if (this.opacity <= 0) return;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color + this.opacity + ')';
+            ctx.fill();
+        }
+    }
+
+    const triggerSparkBurst = () => {
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        // Spawn 120 sparks
+        for (let i = 0; i < 120; i++) {
+            particles.push(new SparkParticle(centerX, centerY));
+        }
+    };
+
     // Initialize particles
     const initParticles = () => {
         particles = [];
@@ -203,19 +268,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const animateParticles = (timestamp) => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        for (let i = 0; i < particles.length; i++) {
-            particles[i].update(timestamp);
-            particles[i].draw();
-        }
+        // Filter and update/draw particles (garbage-collect dead sparks)
+        particles = particles.filter(p => {
+            if (p instanceof Particle) {
+                p.update(timestamp);
+                p.draw();
+                return true;
+            } else {
+                p.update();
+                p.draw();
+                return p.opacity > 0;
+            }
+        });
 
         requestAnimationFrame(animateParticles);
     };
 
     // Start particles system
-    if (particleCount > 0) {
-        initParticles();
-        animateParticles();
-    }
+    initParticles();
+    animateParticles();
 
     const playBeep = () => {
         beepAudio.currentTime = 0;
@@ -269,33 +340,61 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Play explosion sound after showing 1
                     setTimeout(() => {
                         playExplosion();
+                        triggerSparkBurst();
+
+                        // Add light explosion flash animation
+                        if (flashOverlay) {
+                            flashOverlay.classList.remove('flash-active');
+                            flashOverlay.offsetHeight; /* trigger reflow */
+                            flashOverlay.classList.add('flash-active');
+                        }
 
                         // Add zoom out animation to the number
                         countdownNumber.style.animation = 'zoomOut 1s ease-in forwards';
 
-                        // Chuyển nền sang bg led_1.png và tắt hiệu ứng mờ
+                        // At the peak of the flash (200ms), swap elements and play video
                         setTimeout(() => {
-                            const bg1 = document.querySelector('.background-container.bg-1');
-                            const bg2 = document.querySelector('.background-container.bg-2');
-                            if (bg1 && bg2) {
-                                // Transition opacity 1.5s (cross-fade)
-                                bg1.style.opacity = '0';
-                                bg2.style.opacity = '1';
-                                
-                                // Play nhac.mp3
-                                nhacAudio.currentTime = 0;
-                                nhacAudio.play().catch(e => console.log("Nhac audio play failed:", e));
+                            // Hide countdown Display
+                            if (countdownDisplay) {
+                                countdownDisplay.classList.add('hide');
                             }
-                            blurOverlay.classList.remove('active');
                             
-                            // Ẩn các nút bấm đi để hiện rõ nền mới
+                            // Hide buttons
                             const buttonsWrapper = document.querySelector('.buttons-wrapper');
                             if (buttonsWrapper) {
                                 buttonsWrapper.style.display = 'none';
                             }
-                            
-                            isFinished = true; // Đánh dấu đã xong để xử lý tap/click reset
-                        }, 500); // Wait 500ms into the 1s zoomOut animation
+
+                            // Turn off blur overlay
+                            if (blurOverlay) {
+                                blurOverlay.classList.remove('active');
+                            }
+
+
+
+                            // Play background music nhac.mp3 immediately
+                            nhacAudio.currentTime = 0;
+                            nhacAudio.play().catch(e => console.log("Nhac audio play failed:", e));
+
+                            // Start video playback muted as visual background
+                            if (eventVideo) {
+                                eventVideo.muted = true;
+                                eventVideo.classList.add('active');
+                                eventVideo.play().then(() => {
+                                    console.log("Video started successfully without delay.");
+                                }).catch(e => {
+                                    console.log("Video play failed:", e);
+                                });
+
+                                // When the video finishes, fade it out smoothly. 
+                                // Background music (nhacAudio) keeps playing seamlessly.
+                                eventVideo.onended = () => {
+                                    eventVideo.classList.remove('active');
+                                };
+                            }
+
+                            isFinished = true; // Mark as finished to allow tap/click reset
+                        }, 200); // 200ms corresponds to the peak opacity of the light flash
                     }, 1000); // Wait 1 second after showing "1"
                 }
             }
@@ -342,17 +441,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 startCountdown();
             }
         } else if (e.key === '2') {
-            // Bấm 2 để quay lại nền ban đầu với hiệu ứng chồng mờ
-            const bg1 = document.querySelector('.background-container.bg-1');
-            const bg2 = document.querySelector('.background-container.bg-2');
-            if (bg1 && bg2) {
-                bg1.style.opacity = '1';
-                bg2.style.opacity = '0';
-            }
+
             
-            // Tắt nhạc khi quay về nền cũ
+            // Tắt nhạc và video khi quay về nền cũ
             nhacAudio.pause();
             nhacAudio.currentTime = 0;
+
+            if (eventVideo) {
+                eventVideo.pause();
+                eventVideo.currentTime = 0;
+                eventVideo.classList.remove('active');
+            }
+
+            if (flashOverlay) {
+                flashOverlay.classList.remove('flash-active');
+            }
 
             // Reset buttons wrapper and waves
             if (buttonsWrapper) {
@@ -388,16 +491,21 @@ document.addEventListener('DOMContentLoaded', () => {
             } 
             // Tương đương ấn phím '2'
             else if (isFinished) {
-                const bg1 = document.querySelector('.background-container.bg-1');
-                const bg2 = document.querySelector('.background-container.bg-2');
-                if (bg1 && bg2) {
-                    bg1.style.opacity = '1';
-                    bg2.style.opacity = '0';
-                }
+
                 
-                // Tắt nhạc khi quay về nền cũ
+                // Tắt nhạc và video khi quay về nền cũ
                 nhacAudio.pause();
                 nhacAudio.currentTime = 0;
+
+                if (eventVideo) {
+                    eventVideo.pause();
+                    eventVideo.currentTime = 0;
+                    eventVideo.classList.remove('active');
+                }
+
+                if (flashOverlay) {
+                    flashOverlay.classList.remove('flash-active');
+                }
                 
                 // Reset buttons wrapper and waves
                 if (buttonsWrapper) {
