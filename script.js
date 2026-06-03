@@ -22,6 +22,36 @@ document.addEventListener('DOMContentLoaded', () => {
         eventVideo.volume = 1.0; // Max volume for the event video
     }
 
+    let fadeIntervalId = null;
+
+    const fadeOutAudio = (audio, duration = 2000) => {
+        if (!audio) return;
+        if (fadeIntervalId) {
+            clearInterval(fadeIntervalId);
+        }
+        
+        const startVolume = 1.0;
+        audio.volume = startVolume;
+        const steps = 40;
+        const stepVolume = startVolume / steps;
+        const stepTime = duration / steps;
+        let currentStep = 0;
+
+        fadeIntervalId = setInterval(() => {
+            currentStep++;
+            if (currentStep >= steps) {
+                audio.volume = 0;
+                audio.pause();
+                audio.currentTime = 0;
+                audio.volume = startVolume; // Restore original volume for next play
+                clearInterval(fadeIntervalId);
+                fadeIntervalId = null;
+            } else {
+                audio.volume = Math.max(0, startVolume - (stepVolume * currentStep));
+            }
+        }, stepTime);
+    };
+
     let isCountingDown = false;
     let isStarted = false;
     let isReady = false; // Trạng thái đã ấn Enter để hiện nút
@@ -341,6 +371,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isCountingDown) return;
         isCountingDown = true;
 
+        // Stop any running fade out
+        if (fadeIntervalId) {
+            clearInterval(fadeIntervalId);
+            fadeIntervalId = null;
+        }
+        nhacAudio.volume = 1.0;
+
         // Play first beep immediately for "5"
         playBeep();
 
@@ -431,17 +468,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                     console.log("Video play failed:", e);
                                 });
 
-                                // When the video finishes, fade it out smoothly. 
-                                // Background music (nhacAudio) keeps playing seamlessly.
+                                // When the video finishes, pause on the last frame
+                                // and keep the background music running seamlessly.
                                 eventVideo.onended = () => {
-                                    eventVideo.classList.remove('active');
-                                    // Restore the first LED background
-                                    if (bg1) {
-                                        bg1.style.display = '';
-                                        bg1.style.opacity = '0';
-                                        bg1.offsetHeight; // trigger reflow
-                                        bg1.style.opacity = '1';
-                                    }
+                                    eventVideo.pause();
+                                    console.log("Video ended, paused at last frame.");
                                 };
                             }
 
@@ -493,21 +524,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 startCountdown();
             }
         } else if (e.key === '2') {
-            // Restore background image instantly
+            // Chồng mờ về background chính (cross-fade back to main bg)
             const bg1 = document.querySelector('.background-container.bg-1');
             if (bg1) {
                 bg1.style.display = '';
+                bg1.style.opacity = '0';
+                bg1.offsetHeight; // trigger reflow
                 bg1.style.opacity = '1';
             }
             
-            // Tắt nhạc và video khi quay về nền cũ
-            nhacAudio.pause();
-            nhacAudio.currentTime = 0;
+            // Xuống nhạc từ từ (fade down music slowly)
+            fadeOutAudio(nhacAudio, 2000);
 
             if (eventVideo) {
-                eventVideo.pause();
-                eventVideo.currentTime = 0;
                 eventVideo.classList.remove('active');
+                // Chờ video ẩn hoàn toàn mới pause và reset
+                setTimeout(() => {
+                    eventVideo.pause();
+                    eventVideo.currentTime = 0;
+                }, 500);
             }
 
             if (flashOverlay) {
@@ -548,21 +583,25 @@ document.addEventListener('DOMContentLoaded', () => {
             } 
             // Tương đương ấn phím '2'
             else if (isFinished) {
-                // Restore background image instantly
+                // Chồng mờ về background chính (cross-fade back to main bg)
                 const bg1 = document.querySelector('.background-container.bg-1');
                 if (bg1) {
                     bg1.style.display = '';
+                    bg1.style.opacity = '0';
+                    bg1.offsetHeight; // trigger reflow
                     bg1.style.opacity = '1';
                 }
                 
-                // Tắt nhạc và video khi quay về nền cũ
-                nhacAudio.pause();
-                nhacAudio.currentTime = 0;
+                // Xuống nhạc từ từ (fade down music slowly)
+                fadeOutAudio(nhacAudio, 2000);
 
                 if (eventVideo) {
-                    eventVideo.pause();
-                    eventVideo.currentTime = 0;
                     eventVideo.classList.remove('active');
+                    // Chờ video ẩn hoàn toàn mới pause và reset
+                    setTimeout(() => {
+                        eventVideo.pause();
+                        eventVideo.currentTime = 0;
+                    }, 500);
                 }
 
                 if (flashOverlay) {
