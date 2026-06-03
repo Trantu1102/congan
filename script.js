@@ -85,16 +85,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Preload and warm up the video decoder to prevent lag/delay on play
+        // Preload and cache the video as a Blob for zero-delay Vercel playback
         if (eventVideo) {
-            eventVideo.load();
-            eventVideo.play().then(() => {
-                eventVideo.pause();
-                eventVideo.currentTime = 0;
-                eventVideo.muted = false; // Unmute so sound plays when active
-            }).catch(e => {
-                console.log("Video pre-warm failed:", e);
-            });
+            const sourceEl = eventVideo.querySelector('source');
+            const videoUrl = sourceEl ? sourceEl.getAttribute('src') : 'Video/clip_2.mp4';
+            
+            fetch(videoUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error("Video download failed");
+                    return response.blob();
+                })
+                .then(blob => {
+                    const blobUrl = URL.createObjectURL(blob);
+                    eventVideo.src = blobUrl;
+                    eventVideo.load();
+                    // Warm up the video decoder with the cached blob
+                    eventVideo.play().then(() => {
+                        eventVideo.pause();
+                        eventVideo.currentTime = 0;
+                    }).catch(e => console.log("Video pre-warm failed:", e));
+                })
+                .catch(err => {
+                    console.log("Failed to preload blob, falling back to stream:", err);
+                    eventVideo.load();
+                    eventVideo.play().then(() => {
+                        eventVideo.pause();
+                        eventVideo.currentTime = 0;
+                    }).catch(e => console.log("Video pre-warm fallback failed:", e));
+                });
         }
 
         // Hide start overlay
