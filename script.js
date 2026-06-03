@@ -457,23 +457,27 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (bg1) {
                                 bg1.style.display = 'none';
                             }
-
+                            
                             // Start video playback muted as visual background
                             if (eventVideo) {
                                 eventVideo.muted = true;
                                 eventVideo.classList.add('active');
+                                
+                                // Đóng băng hình ở giây cuối cùng (freeze on the last frame)
+                                eventVideo.ontimeupdate = () => {
+                                    if (eventVideo.duration && eventVideo.currentTime >= eventVideo.duration - 0.3) {
+                                        eventVideo.pause();
+                                        eventVideo.currentTime = eventVideo.duration - 0.1; // Force seek to the last frame
+                                        eventVideo.ontimeupdate = null; // Remove listener to stay frozen
+                                        console.log("Video frozen on the last frame.");
+                                    }
+                                };
+
                                 eventVideo.play().then(() => {
                                     console.log("Video started successfully without delay.");
                                 }).catch(e => {
                                     console.log("Video play failed:", e);
                                 });
-
-                                // When the video finishes, pause on the last frame
-                                // and keep the background music running seamlessly.
-                                eventVideo.onended = () => {
-                                    eventVideo.pause();
-                                    console.log("Video ended, paused at last frame.");
-                                };
                             }
 
                             isFinished = true; // Mark as finished to allow tap/click reset
