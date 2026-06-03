@@ -462,16 +462,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (eventVideo) {
                                 eventVideo.muted = true;
                                 eventVideo.classList.add('active');
-                                
-                                // Đóng băng hình ở giây cuối cùng (freeze on the last frame)
-                                eventVideo.ontimeupdate = () => {
-                                    if (eventVideo.duration && eventVideo.currentTime >= eventVideo.duration - 0.3) {
-                                        eventVideo.pause();
-                                        eventVideo.currentTime = eventVideo.duration - 0.1; // Force seek to the last frame
-                                        eventVideo.ontimeupdate = null; // Remove listener to stay frozen
-                                        console.log("Video frozen on the last frame.");
-                                    }
-                                };
+                                                                // Đóng băng hình ở giây cuối cùng (freeze on the last frame)
+                                 eventVideo.ontimeupdate = () => {
+                                     if (eventVideo.duration && eventVideo.currentTime >= eventVideo.duration - 1.09) {
+                                         eventVideo.pause();
+                                         eventVideo.ontimeupdate = null; // Gỡ bỏ sự kiện sau khi đã đóng băng để giữ nguyên hình ảnh
+                                         console.log("Video frozen on the last frame without seeking.");
+                                     }
+                                 };
 
                                 eventVideo.play().then(() => {
                                     console.log("Video started successfully without delay.");
