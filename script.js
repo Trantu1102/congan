@@ -32,6 +32,41 @@ document.addEventListener('DOMContentLoaded', () => {
         buttonsWrapper.classList.add('hide');
     }
 
+    // Start preloading the video as a Blob immediately on page load
+    let isVideoBlobLoaded = false;
+    let videoBlobUrl = '';
+
+    if (eventVideo) {
+        const sourceEl = eventVideo.querySelector('source');
+        const videoUrl = sourceEl ? sourceEl.getAttribute('src') : 'Video/clip_2.mp4';
+        
+        fetch(videoUrl)
+            .then(response => {
+                if (!response.ok) throw new Error("Video download failed");
+                return response.blob();
+            })
+            .then(blob => {
+                videoBlobUrl = URL.createObjectURL(blob);
+                isVideoBlobLoaded = true;
+                
+                // Only swap source if video is not currently playing or counting down
+                if (!isCountingDown && !isFinished) {
+                    eventVideo.src = videoBlobUrl;
+                    eventVideo.load();
+                    // Warm up the video decoder with the cached blob
+                    eventVideo.play().then(() => {
+                        eventVideo.pause();
+                        eventVideo.currentTime = 0;
+                        console.log("Background preloaded Blob decoder warmed up.");
+                    }).catch(e => console.log("Blob warm-up failed:", e));
+                    console.log("Video preloaded as Blob successfully on page load.");
+                }
+            })
+            .catch(err => {
+                console.log("Background preloading failed, will stream directly:", err);
+            });
+    }
+
     // ========================================
     // Fullscreen Functions
     // ========================================
@@ -85,34 +120,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Preload and cache the video as a Blob for zero-delay Vercel playback
+        // Warm up the video decoder to prevent lag/delay on play
         if (eventVideo) {
-            const sourceEl = eventVideo.querySelector('source');
-            const videoUrl = sourceEl ? sourceEl.getAttribute('src') : 'Video/clip_2.mp4';
-            
-            fetch(videoUrl)
-                .then(response => {
-                    if (!response.ok) throw new Error("Video download failed");
-                    return response.blob();
-                })
-                .then(blob => {
-                    const blobUrl = URL.createObjectURL(blob);
-                    eventVideo.src = blobUrl;
-                    eventVideo.load();
-                    // Warm up the video decoder with the cached blob
-                    eventVideo.play().then(() => {
-                        eventVideo.pause();
-                        eventVideo.currentTime = 0;
-                    }).catch(e => console.log("Video pre-warm failed:", e));
-                })
-                .catch(err => {
-                    console.log("Failed to preload blob, falling back to stream:", err);
-                    eventVideo.load();
-                    eventVideo.play().then(() => {
-                        eventVideo.pause();
-                        eventVideo.currentTime = 0;
-                    }).catch(e => console.log("Video pre-warm fallback failed:", e));
-                });
+            // If blob loaded in background, swap source now
+            if (isVideoBlobLoaded && videoBlobUrl) {
+                eventVideo.src = videoBlobUrl;
+            }
+            eventVideo.load();
+            eventVideo.play().then(() => {
+                eventVideo.pause();
+                eventVideo.currentTime = 0;
+                console.log("Video decoder pre-warmed successfully in handleStart.");
+            }).catch(e => {
+                console.log("Video decoder pre-warm failed in handleStart:", e);
+            });
         }
 
         // Hide start overlay
