@@ -376,6 +376,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             nhacAudio.currentTime = 0;
                             nhacAudio.play().catch(e => console.log("Nhac audio play failed:", e));
 
+                            // Hide the first LED background immediately to prevent it from showing behind/under the video
+                            const bg1 = document.querySelector('.background-container.bg-1');
+                            if (bg1) {
+                                bg1.style.display = 'none';
+                            }
+
                             // Start video playback muted as visual background
                             if (eventVideo) {
                                 eventVideo.muted = true;
@@ -390,6 +396,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                 // Background music (nhacAudio) keeps playing seamlessly.
                                 eventVideo.onended = () => {
                                     eventVideo.classList.remove('active');
+                                    // Restore the first LED background
+                                    if (bg1) {
+                                        bg1.style.display = '';
+                                        bg1.style.opacity = '0';
+                                        bg1.offsetHeight; // trigger reflow
+                                        bg1.style.opacity = '1';
+                                    }
                                 };
                             }
 
@@ -441,7 +454,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 startCountdown();
             }
         } else if (e.key === '2') {
-
+            // Restore background image instantly
+            const bg1 = document.querySelector('.background-container.bg-1');
+            if (bg1) {
+                bg1.style.display = '';
+                bg1.style.opacity = '1';
+            }
             
             // Tắt nhạc và video khi quay về nền cũ
             nhacAudio.pause();
@@ -491,7 +509,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } 
             // Tương đương ấn phím '2'
             else if (isFinished) {
-
+                // Restore background image instantly
+                const bg1 = document.querySelector('.background-container.bg-1');
+                if (bg1) {
+                    bg1.style.display = '';
+                    bg1.style.opacity = '1';
+                }
                 
                 // Tắt nhạc và video khi quay về nền cũ
                 nhacAudio.pause();
