@@ -47,17 +47,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================
     // Start Overlay Handler
     // ========================================
-    const handleStart = async () => {
+    const handleStart = () => {
         if (isStarted) return;
         isStarted = true;
 
-        // Enter fullscreen
-        await enterFullscreen();
-
-        // Hide start overlay
+        // An lop phu truoc, khong cho fullscreen chan luong
         if (startOverlay) {
             startOverlay.classList.add('hidden');
         }
+
+        // Goi fullscreen ngay trong thao tac cua nguoi dung
+        enterFullscreen();
     };
 
     // Click/Touch on start overlay
@@ -286,17 +286,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check on load
     handleOrientationChange();
 
-    // Keyboard event (Enter)
+    // ========================================
+    // Dieu khien bang ban phim
+    //   Enter : vao man hinh nen (chua hien nut)
+    //   1     : hien cac nut
+    //   2     : chay dem nguoc
+    // ========================================
+    const buttonsWrapper = document.querySelector('.buttons-wrapper');
+    let areButtonsVisible = false;
+
+    const revealButtons = () => {
+        if (areButtonsVisible) return;
+        areButtonsVisible = true;
+        if (buttonsWrapper) {
+            buttonsWrapper.classList.add('revealed');
+        }
+    };
+
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+        // Bo qua khi dang giu phim tat he thong
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        const key = e.key;
+        const code = e.code;
+        const isOne = key === '1' || code === 'Digit1' || code === 'Numpad1';
+        const isTwo = key === '2' || code === 'Digit2' || code === 'Numpad2';
+
+        if (key === 'Enter') {
+            e.preventDefault();
+            if (document.activeElement && document.activeElement.blur) {
+                document.activeElement.blur();
+            }
+            handleStart();
+        } else if (isOne) {
+            e.preventDefault();
+            handleStart();
+            revealButtons();
+        } else if (isTwo) {
+            e.preventDefault();
+            handleStart();
+            revealButtons();
             startCountdown();
         }
     });
-
-    // Handle initial focus on first button (only on non-touch devices)
-    if (buttons.length > 0 && !('ontouchstart' in window)) {
-        buttons[0].focus();
-    }
 
     // Prevent zoom on double-tap for iOS
     let lastTouchEnd = 0;

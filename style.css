@@ -799,3 +799,35 @@ body {
         scroll-behavior: auto !important;
     }
 }
+
+/* ========================================
+   Ẩn hàng nút cho tới khi bấm phím "1"
+   ======================================== */
+.buttons-wrapper {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.7s ease, visibility 0s linear 0.7s;
+}
+
+.buttons-wrapper.revealed {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.9s ease, visibility 0s linear 0s;
+}
+
+/* Từng nút hiện lần lượt từ trái sang phải */
+.buttons-wrapper .main-button {
+    opacity: 0;
+    transition: opacity 0.55s ease;
+}
+
+.buttons-wrapper.revealed .main-button {
+    opacity: 1;
+}
+
+.buttons-wrapper.revealed .main-button[data-number="1"] { transition-delay: 0.00s; }
+.buttons-wrapper.revealed .main-button[data-number="2"] { transition-delay: 0.10s; }
+.buttons-wrapper.revealed .main-button[data-number="3"] { transition-delay: 0.20s; }
+.buttons-wrapper.revealed .main-button[data-number="4"] { transition-delay: 0.30s; }
+.buttons-wrapper.revealed .main-button[data-number="5"] { transition-delay: 0.40s; }
+.buttons-wrapper.revealed .main-button[data-number="6"] { transition-delay: 0.50s; }
