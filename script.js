@@ -4,98 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const countdownNumber = document.getElementById('countdownNumber');
     const blurOverlay = document.getElementById('blurOverlay');
     const startOverlay = document.getElementById('startOverlay');
-    const flashOverlay = document.getElementById('flashOverlay');
-    const eventVideo = document.getElementById('eventVideo');
-    const targetUrl = "https://cand.vn/";
+    const targetUrl = "https://ru.cand.vn/";
     // Beep sound for countdown numbers
     const beepAudio = new Audio('beep.mp3');
     // Explosion sound for zero
     const explosionAudio = new Audio('explosion.mp3');
-    // Background music after countdown
-    const nhacAudio = new Audio('nhac.mp3');
 
     // Adjust volume levels
     beepAudio.volume = 0.3; // Quieter beep
     explosionAudio.volume = 1.0; // Max volume for explosion
-    nhacAudio.volume = 1.0; // Max volume for background music
-    if (eventVideo) {
-        eventVideo.volume = 1.0; // Max volume for the event video
-    }
-
-    let fadeIntervalId = null;
-
-    const fadeOutAudio = (audio, duration = 2000) => {
-        if (!audio) return;
-        if (fadeIntervalId) {
-            clearInterval(fadeIntervalId);
-        }
-        
-        const startVolume = 1.0;
-        audio.volume = startVolume;
-        const steps = 40;
-        const stepVolume = startVolume / steps;
-        const stepTime = duration / steps;
-        let currentStep = 0;
-
-        fadeIntervalId = setInterval(() => {
-            currentStep++;
-            if (currentStep >= steps) {
-                audio.volume = 0;
-                audio.pause();
-                audio.currentTime = 0;
-                audio.volume = startVolume; // Restore original volume for next play
-                clearInterval(fadeIntervalId);
-                fadeIntervalId = null;
-            } else {
-                audio.volume = Math.max(0, startVolume - (stepVolume * currentStep));
-            }
-        }, stepTime);
-    };
 
     let isCountingDown = false;
     let isStarted = false;
-    let isReady = false; // Trạng thái đã ấn Enter để hiện nút
-    let isFinished = false; // Trạng thái đếm ngược xong
-    
-    const buttonsWrapper = document.querySelector('.buttons-wrapper');
-    if (buttonsWrapper) {
-        buttonsWrapper.classList.add('hide');
-    }
-
-    // Start preloading the video as a Blob immediately on page load
-    let isVideoBlobLoaded = false;
-    let videoBlobUrl = '';
-
-    if (eventVideo) {
-        const sourceEl = eventVideo.querySelector('source');
-        const videoUrl = sourceEl ? sourceEl.getAttribute('src') : 'Video/clip_2.mp4';
-        
-        fetch(videoUrl)
-            .then(response => {
-                if (!response.ok) throw new Error("Video download failed");
-                return response.blob();
-            })
-            .then(blob => {
-                videoBlobUrl = URL.createObjectURL(blob);
-                isVideoBlobLoaded = true;
-                
-                // Only swap source if video is not currently playing or counting down
-                if (!isCountingDown && !isFinished) {
-                    eventVideo.src = videoBlobUrl;
-                    eventVideo.load();
-                    // Warm up the video decoder with the cached blob
-                    eventVideo.play().then(() => {
-                        eventVideo.pause();
-                        eventVideo.currentTime = 0;
-                        console.log("Background preloaded Blob decoder warmed up.");
-                    }).catch(e => console.log("Blob warm-up failed:", e));
-                    console.log("Video preloaded as Blob successfully on page load.");
-                }
-            })
-            .catch(err => {
-                console.log("Background preloading failed, will stream directly:", err);
-            });
-    }
 
     // ========================================
     // Fullscreen Functions
@@ -134,38 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Enter fullscreen
         await enterFullscreen();
 
-        // Unlock audio on iOS/mobile browsers without glitching
-        [beepAudio, explosionAudio, nhacAudio].forEach(audio => {
-            audio.muted = true; // Mute reliably
-            const playPromise = audio.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    audio.pause();
-                    audio.currentTime = 0;
-                    audio.muted = false; // Restore sound
-                }).catch(e => {
-                    audio.muted = false;
-                    console.log("Audio unlock failed", e);
-                });
-            }
-        });
-
-        // Warm up the video decoder to prevent lag/delay on play
-        if (eventVideo) {
-            // If blob loaded in background, swap source now
-            if (isVideoBlobLoaded && videoBlobUrl) {
-                eventVideo.src = videoBlobUrl;
-            }
-            eventVideo.load();
-            eventVideo.play().then(() => {
-                eventVideo.pause();
-                eventVideo.currentTime = 0;
-                console.log("Video decoder pre-warmed successfully in handleStart.");
-            }).catch(e => {
-                console.log("Video decoder pre-warm failed in handleStart:", e);
-            });
-        }
-
         // Hide start overlay
         if (startOverlay) {
             startOverlay.classList.add('hidden');
@@ -191,17 +79,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const particleCount = prefersReducedMotion ? 0 : (isMobile ? 20 : 40);
 
-    // Resize canvas to match the led-wrapper container
+    // Resize canvas to full screen
     const resizeCanvas = () => {
-        const wrapper = document.querySelector('.led-wrapper');
-        if (wrapper) {
-            canvas.width = wrapper.clientWidth;
-            canvas.height = wrapper.clientHeight;
-        } else {
-            const viewport = window.visualViewport;
-            canvas.width = Math.round(viewport ? viewport.width : window.innerWidth);
-            canvas.height = Math.round(viewport ? viewport.height : window.innerHeight);
-        }
+        const viewport = window.visualViewport;
+        canvas.width = Math.round(viewport ? viewport.width : window.innerWidth);
+        canvas.height = Math.round(viewport ? viewport.height : window.innerHeight);
     };
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
@@ -277,54 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Spark particle class for the explosion effect
-    class SparkParticle {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 8 + 4; // Fast radiating speed
-            this.speedX = Math.cos(angle) * speed;
-            this.speedY = Math.sin(angle) * speed - 1.5; // Slight upward bias
-            this.size = Math.random() * 5 + 2; // Size
-            this.opacity = 1;
-            this.decay = Math.random() * 0.02 + 0.015; // Fade decay
-            this.gravity = 0.08; // Gravity pulls sparks downward
-            
-            const colors = [
-                'rgba(255, 255, 255, ', // White hot
-                'rgba(0, 229, 255, ',   // Neon Cyan
-                'rgba(0, 150, 255, ',   // Electric Blue
-                'rgba(130, 240, 255, '  // Light Ice Blue
-            ];
-            this.color = colors[Math.floor(Math.random() * colors.length)];
-        }
-
-        update() {
-            this.x += this.speedX;
-            this.y += this.speedY;
-            this.speedY += this.gravity;
-            this.opacity -= this.decay;
-        }
-
-        draw() {
-            if (this.opacity <= 0) return;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fillStyle = this.color + this.opacity + ')';
-            ctx.fill();
-        }
-    }
-
-    const triggerSparkBurst = () => {
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        // Spawn 120 sparks
-        for (let i = 0; i < 120; i++) {
-            particles.push(new SparkParticle(centerX, centerY));
-        }
-    };
-
     // Initialize particles
     const initParticles = () => {
         particles = [];
@@ -337,25 +171,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const animateParticles = (timestamp) => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Filter and update/draw particles (garbage-collect dead sparks)
-        particles = particles.filter(p => {
-            if (p instanceof Particle) {
-                p.update(timestamp);
-                p.draw();
-                return true;
-            } else {
-                p.update();
-                p.draw();
-                return p.opacity > 0;
-            }
-        });
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update(timestamp);
+            particles[i].draw();
+        }
 
         requestAnimationFrame(animateParticles);
     };
 
     // Start particles system
-    initParticles();
-    animateParticles();
+    if (particleCount > 0) {
+        initParticles();
+        animateParticles();
+    }
 
     const playBeep = () => {
         beepAudio.currentTime = 0;
@@ -370,13 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const startCountdown = () => {
         if (isCountingDown) return;
         isCountingDown = true;
-
-        // Stop any running fade out
-        if (fadeIntervalId) {
-            clearInterval(fadeIntervalId);
-            fadeIntervalId = null;
-        }
-        nhacAudio.volume = 1.0;
 
         // Play first beep immediately for "5"
         playBeep();
@@ -416,70 +237,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Play explosion sound after showing 1
                     setTimeout(() => {
                         playExplosion();
-                        triggerSparkBurst();
-
-                        // Add light explosion flash animation
-                        if (flashOverlay) {
-                            flashOverlay.classList.remove('flash-active');
-                            flashOverlay.offsetHeight; /* trigger reflow */
-                            flashOverlay.classList.add('flash-active');
-                        }
 
                         // Add zoom out animation to the number
                         countdownNumber.style.animation = 'zoomOut 1s ease-in forwards';
 
-                        // At the peak of the flash (200ms), swap elements and play video
+                        // Redirect early while zoom is still happening (avoid black screen)
                         setTimeout(() => {
-                            // Hide countdown Display
-                            if (countdownDisplay) {
-                                countdownDisplay.classList.add('hide');
-                            }
-                            
-                            // Hide buttons
-                            const buttonsWrapper = document.querySelector('.buttons-wrapper');
-                            if (buttonsWrapper) {
-                                buttonsWrapper.style.display = 'none';
-                            }
-
-                            // Turn off blur overlay
-                            if (blurOverlay) {
-                                blurOverlay.classList.remove('active');
-                            }
-
-
-
-                            // Play background music nhac.mp3 immediately
-                            nhacAudio.currentTime = 0;
-                            nhacAudio.play().catch(e => console.log("Nhac audio play failed:", e));
-
-                            // Hide the first LED background immediately to prevent it from showing behind/under the video
-                            const bg1 = document.querySelector('.background-container.bg-1');
-                            if (bg1) {
-                                bg1.style.display = 'none';
-                            }
-                            
-                            // Start video playback muted as visual background
-                            if (eventVideo) {
-                                eventVideo.muted = true;
-                                eventVideo.classList.add('active');
-                                                                // Đóng băng hình ở giây cuối cùng (freeze on the last frame)
-                                 eventVideo.ontimeupdate = () => {
-                                     if (eventVideo.duration && eventVideo.currentTime >= eventVideo.duration - 1.09) {
-                                         eventVideo.pause();
-                                         eventVideo.ontimeupdate = null; // Gỡ bỏ sự kiện sau khi đã đóng băng để giữ nguyên hình ảnh
-                                         console.log("Video frozen on the last frame without seeking.");
-                                     }
-                                 };
-
-                                eventVideo.play().then(() => {
-                                    console.log("Video started successfully without delay.");
-                                }).catch(e => {
-                                    console.log("Video play failed:", e);
-                                });
-                            }
-
-                            isFinished = true; // Mark as finished to allow tap/click reset
-                        }, 200); // 200ms corresponds to the peak opacity of the light flash
+                            window.location.href = targetUrl;
+                        }, 500); // Redirect at 50% of zoom, before it goes invisible
                     }, 1000); // Wait 1 second after showing "1"
                 }
             }
@@ -506,127 +271,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { passive: false });
     });
 
+    // Handle orientation change
+    const handleOrientationChange = () => {
+        const rotateOverlay = document.getElementById('rotateOverlay');
+        if (rotateOverlay) {
+            rotateOverlay.style.display = 'none';
+        }
+    };
 
+    // Listen for orientation changes
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
 
-    // Keyboard events
+    // Check on load
+    handleOrientationChange();
+
+    // Keyboard event (Enter)
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            // Nếu chưa ready và chưa đếm ngược -> chuyển sang trạng thái hiện nút và mờ nền
-            if (!isReady && !isCountingDown) {
-                isReady = true;
-                if (buttonsWrapper) {
-                    buttonsWrapper.classList.remove('hide');
-                    buttonsWrapper.style.display = '';
-                }
-                blurOverlay.classList.add('active');
-            }
-        } else if (e.key === '1') {
-            // Nếu đã ready thì ấn 1 sẽ đếm ngược
-            if (isReady && !isCountingDown) {
-                startCountdown();
-            }
-        } else if (e.key === '2') {
-            // Chồng mờ về background chính (cross-fade back to main bg)
-            const bg1 = document.querySelector('.background-container.bg-1');
-            if (bg1) {
-                bg1.style.display = '';
-                bg1.style.opacity = '0';
-                bg1.offsetHeight; // trigger reflow
-                bg1.style.opacity = '1';
-            }
-            
-            // Xuống nhạc từ từ (fade down music slowly)
-            fadeOutAudio(nhacAudio, 2000);
-
-            if (eventVideo) {
-                eventVideo.classList.remove('active');
-                // Chờ video ẩn hoàn toàn mới pause và reset
-                setTimeout(() => {
-                    eventVideo.pause();
-                    eventVideo.currentTime = 0;
-                }, 500);
-            }
-
-            if (flashOverlay) {
-                flashOverlay.classList.remove('flash-active');
-            }
-
-            // Reset buttons wrapper and waves
-            if (buttonsWrapper) {
-                buttonsWrapper.style.display = '';
-                buttonsWrapper.classList.add('hide');
-            }
-            buttons.forEach(btn => {
-                const waves = btn.querySelectorAll('.radial-wave');
-                waves.forEach(wave => wave.classList.remove('radial-wave-fast'));
-            });
-
-            isFinished = false;
-            isReady = false;
-            isCountingDown = false;
+            startCountdown();
         }
     });
-
-    // Thêm điều khiển bằng màn hình cảm ứng/chuột thay cho phím cứng
-    const bgWrapper = document.querySelector('.background-wrapper');
-    if (bgWrapper) {
-        bgWrapper.addEventListener('click', (e) => {
-            // Ngăn sự kiện này kích hoạt lung tung
-            e.preventDefault();
-
-            // Tương đương ấn phím 'Enter'
-            if (!isReady && !isCountingDown && !isFinished) {
-                isReady = true;
-                if (buttonsWrapper) {
-                    buttonsWrapper.classList.remove('hide');
-                    buttonsWrapper.style.display = '';
-                }
-                blurOverlay.classList.add('active');
-            } 
-            // Tương đương ấn phím '2'
-            else if (isFinished) {
-                // Chồng mờ về background chính (cross-fade back to main bg)
-                const bg1 = document.querySelector('.background-container.bg-1');
-                if (bg1) {
-                    bg1.style.display = '';
-                    bg1.style.opacity = '0';
-                    bg1.offsetHeight; // trigger reflow
-                    bg1.style.opacity = '1';
-                }
-                
-                // Xuống nhạc từ từ (fade down music slowly)
-                fadeOutAudio(nhacAudio, 2000);
-
-                if (eventVideo) {
-                    eventVideo.classList.remove('active');
-                    // Chờ video ẩn hoàn toàn mới pause và reset
-                    setTimeout(() => {
-                        eventVideo.pause();
-                        eventVideo.currentTime = 0;
-                    }, 500);
-                }
-
-                if (flashOverlay) {
-                    flashOverlay.classList.remove('flash-active');
-                }
-                
-                // Reset buttons wrapper and waves
-                if (buttonsWrapper) {
-                    buttonsWrapper.style.display = '';
-                    buttonsWrapper.classList.add('hide');
-                }
-                buttons.forEach(btn => {
-                    const waves = btn.querySelectorAll('.radial-wave');
-                    waves.forEach(wave => wave.classList.remove('radial-wave-fast'));
-                });
-                
-                // Reset lại trạng thái để có thể bắt đầu lại từ đầu
-                isFinished = false;
-                isReady = false;
-                isCountingDown = false;
-            }
-        });
-    }
 
     // Handle initial focus on first button (only on non-touch devices)
     if (buttons.length > 0 && !('ontouchstart' in window)) {
