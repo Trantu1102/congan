@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         countdownDisplay.classList.remove('hide');
         blurOverlay.classList.add('active');
 
-        let count = 5;
+        let count = 10;
         countdownNumber.textContent = count;
         countdownNumber.setAttribute('data-text', count);
 
